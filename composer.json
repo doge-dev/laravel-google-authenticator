@@ -1,0 +1,21 @@
+{
+    "name": "doge-dev/laravel-google-authenticator",
+    "description": "Google Authenticator implementation for Laravel",
+    "keywords": ["laravel", "google", "authenticator", "2FA", "2SV"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marko Maletic",
+            "email": "maletic.marko@live.com"
+        }
+    ],
+    "require": {
+        "laravel/framework": "5.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "DogeDev\\GoogleAuthenticator\\": "src/"
+        }
+    }
+}
