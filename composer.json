@@ -11,7 +11,8 @@
         }
     ],
     "require": {
-        "laravel/framework": "5.*"
+        "laravel/framework": "5.*",
+        "phpgangsta/googleauthenticator": "dev-master"
     },
     "autoload": {
         "psr-4": {
