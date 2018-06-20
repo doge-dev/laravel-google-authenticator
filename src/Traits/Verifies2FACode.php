@@ -99,8 +99,6 @@ trait Verifies2FACode
 
         $verified = GoogleAuthenticatorFacade::verifyCode($this->secret, $code, 0);
 
-        dd($verified);
-
         if ($verified) {
 
             $this->attempted_2fa = 3;

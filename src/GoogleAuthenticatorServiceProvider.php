@@ -2,6 +2,7 @@
 
 namespace DogeDev\GoogleAuthenticator;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
@@ -17,7 +18,14 @@ class GoogleAuthenticatorServiceProvider extends ServiceProvider
     {
         Validator::extend('2fa', function ($attribute, $value, $parameters, $validator) {
 
-            return Route::input($parameters[0])->verifyCode($value);
+            if (empty($parameters)) {
+
+                return Auth::user()->verifyCode($value);
+
+            } else {
+
+                return Route::input($parameters[0])->verifyCode($value);
+            }
         });
 
         Validator::replacer('2fa', function ($message, $attribute, $rule, $parameters) {
