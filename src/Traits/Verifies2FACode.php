@@ -2,7 +2,8 @@
 
 namespace DogeDev\GoogleAuthenticator\Traits;
 
-use App\Facades\GoogleAuthenticatorFacade;
+use DogeDev\GoogleAuthenticator\Exceptions\TwoFactorAuthenticationNotEnabled;
+use DogeDev\GoogleAuthenticator\GoogleAuthenticatorFacade;
 use GuzzleHttp\Client;
 
 /**
@@ -18,22 +19,17 @@ trait Verifies2FACode
     /**
      * Set the secret attribute.
      *
-     * @param $secret
-     * @return void
+     * @return $this
      */
-    public function setEnable2faAttribute($secret)
+    public function enable2FA()
     {
-        if (!$secret) {
+        if (empty($this->secret)) {
 
-            return;
+            $this->secret = GoogleAuthenticatorFacade::createSecret();
+            $this->save();
         }
 
-        $this->attributes['secret']        = GoogleAuthenticatorFacade::createSecret();
-        $this->attributes['activated_2fa'] = false;
-        $this->attributes['attempted_2fa'] = 3;
-
-        $this->activated_2fa = false;
-        $this->attempted_2fa = 3;
+        return $this;
     }
 
     /**
@@ -49,24 +45,26 @@ trait Verifies2FACode
     /**
      * Returns a QR code for Google Authenticator
      *
-     * @return mixed
+     * @return string
+     * @throws TwoFactorAuthenticationNotEnabled
      */
     public function getQRCodeURL()
     {
-        if (!$this->secret) {
+        if (empty($this->secret)) {
 
-            return true;
+            throw new TwoFactorAuthenticationNotEnabled('2 Factor Authentication has not been enabled');
         }
 
         return GoogleAuthenticatorFacade::getQRCodeGoogleUrl($this->getNameForQRCode(), $this->secret);
     }
 
     /**
-     * Gets the QR Image URI encoded
+     * Gets the base64 encoded QR image
      *
      * @return string
+     * @throws TwoFactorAuthenticationNotEnabled
      */
-    public function getURIEncodedQRImage()
+    public function getBase64EncodedQRImage()
     {
         $client = new Client();
 
@@ -84,46 +82,39 @@ trait Verifies2FACode
      *
      * @param null $code
      * @return bool
+     * @throws TwoFactorAuthenticationNotEnabled
      */
     public function verifyCode($code = null)
     {
         if (!$this->secret) {
 
-            return true;
+            throw new TwoFactorAuthenticationNotEnabled('2 Factor Authentication has not been enabled');
         }
 
-        if (empty($this->attempted_2fa)) {
-
-            return false;
-        }
-
-        $verified = GoogleAuthenticatorFacade::verifyCode($this->secret, $code, 0);
-
-        if ($verified) {
-
-            $this->attempted_2fa = 3;
-
-        } else {
-
-            $this->attempted_2fa--;
-        }
-
-        $this->save();
-
-        return $verified;
+        return GoogleAuthenticatorFacade::verifyCode($this->secret, $code, 0);
     }
 
     /**
      * Activates 2FA on the model
      *
      * @param null $code
-     * @return $this
+     * @return boolean
+     * @throws TwoFactorAuthenticationNotEnabled
      */
     public function activate2FA($code = null)
     {
-        $this->activated_2fa = $this->verifyCode($code);
+        if (!$this->activated_2fa) {
 
-        return $this;
+            if (!$this->verifyCode($code)) {
+
+                return false;
+            }
+
+            $this->activated_2fa = true;
+            $this->save();
+        }
+
+        return true;
     }
 
     /**

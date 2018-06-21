@@ -12,7 +12,8 @@
     ],
     "require": {
         "laravel/framework": "5.*",
-        "phpgangsta/googleauthenticator": "dev-master"
+        "phpgangsta/googleauthenticator": "dev-master",
+        "guzzlehttp/guzzle": "*"
     },
     "autoload": {
         "psr-4": {
